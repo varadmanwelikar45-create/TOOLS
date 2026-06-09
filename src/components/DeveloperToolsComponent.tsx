@@ -1,0 +1,778 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect, useRef } from "react";
+import { 
+  Braces, QrCode, Lock, Shuffle, Key, Shuffle as HashIcon, Palette,
+  Copy, Check, RefreshCw, Eye, EyeOff, PlusCircle, CheckCircle, AlertTriangle
+} from "lucide-react";
+import { ToolItem } from "../types";
+
+export default function DeveloperToolsComponent({ tool, onAddHistory }: { tool: ToolItem; onAddHistory: (id: string, name: string, desc: string) => void }) {
+  const [copied, setCopied] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const triggerCopyToast = () => {
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // --- MODULE 1: JSON FORMATTER & TREE VIEW STATES ---
+  const [jsonInput, setJsonInput] = useState('{"platform": "ToolVerse AI", "engine": "Gemini 3.5 Flash", "active": true, "statistics": {"tools": 45, "credits": 8000, "languages": ["TypeScript", "Python", "Go"]}, "security": "JWT RSA256"}');
+  const [parsedJson, setParsedJson] = useState<any>(null);
+  const [beautifiedJson, setBeautifiedJson] = useState("");
+  const [collapsedNodes, setCollapsedNodes] = useState<Record<string, boolean>>({});
+
+  const processJson = (mode: "format" | "minify") => {
+    setErrorMsg("");
+    try {
+      const parsed = JSON.parse(jsonInput);
+      setParsedJson(parsed);
+      if (mode === "format") {
+        setBeautifiedJson(JSON.stringify(parsed, null, 2));
+      } else {
+        setBeautifiedJson(JSON.stringify(parsed));
+      }
+    } catch (err: any) {
+      setErrorMsg("Syntax Error: " + err.message);
+      setParsedJson(null);
+    }
+  };
+
+  useEffect(() => {
+    processJson("format");
+  }, [jsonInput]);
+
+  const toggleNode = (path: string) => {
+    setCollapsedNodes(prev => ({ ...prev, [path]: !prev[path] }));
+  };
+
+  // Collapsible JSON Tree Renderer
+  const renderJsonTreeNode = (data: any, path: string = "root", depth: number = 0): React.ReactNode => {
+    if (data === null) return <span className="text-yellow-500 font-mono text-xs">null</span>;
+    if (typeof data === "undefined") return <span className="text-zinc-500 font-mono text-xs">undefined</span>;
+    
+    if (Array.isArray(data)) {
+      const isCollapsed = collapsedNodes[path];
+      return (
+        <span className="font-mono text-xs leading-relaxed text-left inline-block">
+          <span 
+            onClick={() => toggleNode(path)}
+            className="text-violet-400 hover:text-violet-300 font-semibold cursor-pointer select-none"
+          >
+            Array({data.length}) {isCollapsed ? "[+]" : "[-]"} [
+          </span>
+          {!isCollapsed && (
+            <div className="pl-4 border-l border-white/5 space-y-1 my-1">
+              {data.map((item, idx) => (
+                <div key={idx} className="flex gap-1.5 items-start">
+                  <span className="text-slate-500">{idx}:</span>
+                  {renderJsonTreeNode(item, `${path}.${idx}`, depth + 1)}
+                </div>
+              ))}
+            </div>
+          )}
+          <span className="text-violet-400">]</span>
+        </span>
+      );
+    }
+
+    if (typeof data === "object") {
+      const isCollapsed = collapsedNodes[path];
+      const keys = Object.keys(data);
+      return (
+        <span className="font-mono text-xs leading-relaxed text-left inline-block">
+          <span 
+            onClick={() => toggleNode(path)}
+            className="text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer select-none"
+          >
+            Object {isCollapsed ? "[+]" : "[-]"} &#123;
+          </span>
+          {!isCollapsed && (
+            <div className="pl-4 border-l border-white/5 space-y-1 my-1">
+              {keys.map(key => (
+                <div key={key} className="flex gap-1.5 items-start">
+                  <span className="text-slate-400">"{key}":</span>
+                  {renderJsonTreeNode(data[key], `${path}.${key}`, depth + 1)}
+                </div>
+              ))}
+            </div>
+          )}
+          <span className="text-indigo-400">&#125;</span>
+        </span>
+      );
+    }
+
+    if (typeof data === "string") {
+      return <span className="text-green-400 font-mono text-xs">"{data}"</span>;
+    }
+    if (typeof data === "number") {
+      return <span className="text-orange-400 font-mono text-xs">{data}</span>;
+    }
+    if (typeof data === "boolean") {
+      return <span className={`font-mono text-xs font-bold ${data ? "text-emerald-400" : "text-pink-400"}`}>{String(data)}</span>;
+    }
+
+    return <span className="text-slate-300 font-mono text-xs">{String(data)}</span>;
+  };
+
+
+  // --- MODULE 2: QR CODE DESIGN STATS & GENERATIVE SCALERS ---
+  const [qrText, setQrText] = useState("https://ai.studio/build");
+  const [qrForeground, setQrForeground] = useState("#4f46e5");
+  const [qrBackground, setQrBackground] = useState("#0a0f1d");
+  const [qrLogo, setQrLogo] = useState<"envelope" | "wifi" | "lock" | "none">("lock");
+  const qrCanvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const drawSandboxQr = () => {
+    if (!qrCanvasRef.current) return;
+    const canvas = qrCanvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      const sz = 300;
+      canvas.width = sz;
+      canvas.height = sz;
+
+      // Draw background
+      ctx.fillStyle = qrBackground;
+      ctx.fillRect(0, 0, sz, sz);
+
+      // Procedural mosaic grid pattern mapping resembling high quality QR codes
+      ctx.fillStyle = qrForeground;
+      
+      const cellSize = 10;
+      const count = sz / cellSize;
+
+      // Seed pseudo QR blocks based on hash of text
+      let seed = 0;
+      for (let i = 0; i < qrText.length; i++) {
+        seed += qrText.charCodeAt(i);
+      }
+
+      const hashCheck = (x: number, y: number) => {
+        const val = Math.sin(x * 12.9898 + y * 78.233 + seed) * 43758.5453;
+        return (val - Math.floor(val)) > 0.45;
+      };
+
+      for (let x = 0; x < count; x++) {
+        for (let y = 0; y < count; y++) {
+          
+          // Draw standard tracking squares on corners
+          const isCornerTracker = 
+            (x < 7 && y < 7) || // Top Left
+            (x >= count - 7 && y < 7) || // Top Right
+            (x < 7 && y >= count - 7); // Bottom Left
+
+          if (isCornerTracker) {
+            // Outline tracking pattern
+            const isFilled = 
+              (x === 0 || x === 6 || y === 0 || y === 6) || // Outer outline
+              (x >= 2 && x <= 4 && y >= 2 && y <= 4); // Inner block
+
+            if (isFilled) {
+              ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+            }
+          } else {
+            // Static random mosaic
+            if (hashCheck(x, y)) {
+              // Leave middle portion clear for brand logo overlay
+              const inCenter = x >= count / 2 - 3 && x <= count / 2 + 3 && y >= count / 2 - 3 && y <= count / 2 + 3;
+              if (qrLogo === "none" || !inCenter) {
+                ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+              }
+            }
+          }
+
+        }
+      }
+
+      // Draw brand logo preset overlay
+      if (qrLogo !== "none") {
+        const logoSz = 50;
+        const cx = (sz - logoSz) / 2;
+        const cy = (sz - logoSz) / 2;
+
+        // Drawer background frame
+        ctx.fillStyle = qrBackground;
+        ctx.strokeStyle = qrForeground;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(cx, cy, logoSz, logoSz, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = qrForeground;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "bold 20px Inter, sans-serif";
+        
+        let sym = "⚡";
+        if (qrLogo === "envelope") sym = "✉";
+        if (qrLogo === "wifi") sym = "📶";
+        if (qrLogo === "lock") sym = "🔒";
+
+        ctx.fillText(sym, cx + logoSz/2, cy + logoSz/2 + 1);
+      }
+
+    }
+  };
+
+  useEffect(() => {
+    drawSandboxQr();
+  }, [qrText, qrForeground, qrBackground, qrLogo]);
+
+  const downloadQrArtifact = () => {
+    if (!qrCanvasRef.current) return;
+    const url = qrCanvasRef.current.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "toolverse_qr_code.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    onAddHistory(tool.id, tool.name, `Created QR Code for text: "${qrText.slice(0, 20)}..."`);
+  };
+
+
+  // --- MODULE 3: SYMMETRIC PASSWORD ENGINE ---
+  const [passLength, setPassLength] = useState(16);
+  const [incCaps, setIncCaps] = useState(true);
+  const [incNums, setIncNums] = useState(true);
+  const [incSyms, setIncSyms] = useState(true);
+  const [draftedPassword, setDraftedPassword] = useState("");
+  const [strengthMeter, setStrengthMeter] = useState<"weak" | "medium" | "strong" | "extreme">("strong");
+
+  const generateSecurePassword = () => {
+    let charset = "abcdefghijklmnopqrstuvwxyz";
+    if (incCaps) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (incNums) charset += "0123456789";
+    if (incSyms) charset += "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+    let out = "";
+    for (let i = 0; i < passLength; i++) {
+      out += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    setDraftedPassword(out);
+
+    // Calc Strength
+    if (passLength < 8) setStrengthMeter("weak");
+    else if (passLength >= 8 && passLength < 12) setStrengthMeter("medium");
+    else if (passLength >= 12 && passLength < 16) setStrengthMeter("strong");
+    else setStrengthMeter("extreme");
+  };
+
+  useEffect(() => {
+    generateSecurePassword();
+  }, [passLength, incCaps, incNums, incSyms]);
+
+
+  // --- MODULE 4: JWT INSPECTION STRETCH ---
+  const [jwtInput, setJwtInput] = useState("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlZhcmFkIE1hbndlbGlrYXIiLCJlbWFpbCI6InZhcmFkQHNhbmRib3guYWkiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTU5NjIzOTAyMiwicHJvIjp0cnVlfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c");
+  const [jwtHeader, setJwtHeader] = useState("");
+  const [jwtPayload, setJwtPayload] = useState("");
+  const [jwtSignature, setJwtSignature] = useState("");
+
+  const parseJsonWebToken = () => {
+    setErrorMsg("");
+    try {
+      const segments = jwtInput.split(".");
+      if (segments.length !== 3) {
+        throw new Error("JWT token should match structure [HEADER].[PAYLOAD].[SIGNATURE]");
+      }
+
+      const decodedHeader = atob(segments[0].replace(/-/g, "+").replace(/_/g, "/"));
+      const decodedPayload = atob(segments[1].replace(/-/g, "+").replace(/_/g, "/"));
+
+      setJwtHeader(JSON.stringify(JSON.parse(decodedHeader), null, 2));
+      setJwtPayload(JSON.stringify(JSON.parse(decodedPayload), null, 2));
+      setJwtSignature(segments[2]);
+    } catch (err: any) {
+      setErrorMsg("Failed decoding: " + err.message);
+      setJwtHeader("");
+      setJwtPayload("");
+      setJwtSignature("");
+    }
+  };
+
+  useEffect(() => {
+    parseJsonWebToken();
+  }, [jwtInput]);
+
+
+  // --- MODULE 5: BASE64 URL ENCODERS ---
+  const [encoderInput, setEncoderInput] = useState("ToolVerse is highly responsive!");
+  const [encoderMode, setEncoderMode] = useState<"encode" | "decode">("encode");
+  const [encoderOutput, setEncoderOutput] = useState("");
+
+  const processEscaping = () => {
+    setErrorMsg("");
+    try {
+      if (encoderMode === "encode") {
+        setEncoderOutput(btoa(encoderInput));
+      } else {
+        setEncoderOutput(atob(encoderInput));
+      }
+    } catch (err: any) {
+      setErrorMsg("Structure mismatch: Input is not correctly Base64 formatted.");
+      setEncoderOutput("");
+    }
+  };
+
+  useEffect(() => {
+    processEscaping();
+  }, [encoderInput, encoderMode]);
+
+
+  // --- MODULE 6: COLOR PALETTE GENERATOR ---
+  const [paletteColors, setPaletteColors] = useState<string[]>(["#4f46e5", "#8b5cf6", "#ec4899", "#f43f5e", "#10b981"]);
+
+  const randomizePalette = () => {
+    const hex = "0123456789abcdef";
+    const nextArr = [];
+    for (let c = 0; c < 5; c++) {
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += hex.charAt(Math.floor(Math.random() * hex.length));
+      }
+      nextArr.push(color);
+    }
+    setPaletteColors(nextArr);
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full max-w-7xl mx-auto rounded-3xl" id={`tool-panel-${tool.id}`}>
+      
+      {/* LEFT INPUT CONTROLS */}
+      <div className="lg:col-span-5 flex flex-col gap-6">
+        <div className="glass-panel p-6 rounded-2xl glow-indigo text-left relative">
+          
+          <div className="flex items-center gap-3 mb-4 leading-none">
+            <span className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl">
+              {tool.id === "dev-json" ? <Braces size={22} /> :
+               tool.id === "dev-qr" ? <QrCode size={22} /> :
+               tool.id === "dev-password" ? <Lock size={22} /> :
+               tool.id === "dev-jwt" ? <Key size={22} /> :
+               tool.id === "dev-encoders" ? <Shuffle size={22} /> :
+               <Palette size={22} />}
+            </span>
+            <div>
+              <h3 className="text-lg font-bold text-white tracking-tight">{tool.name}</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Developer Engineering Sandbox</p>
+            </div>
+          </div>
+
+          {/* DYNAMIC FORMS BASED ON ACTIVE DEVELOPER TOOL */}
+
+          {/* 1. JSON */}
+          {tool.id === "dev-json" && (
+            <div>
+              <label className="text-xs font-semibold text-slate-400 block mb-2">Raw JSON Input</label>
+              <textarea
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                rows={10}
+                className="w-full text-xs font-mono bg-slate-950 border border-white/10 p-3 rounded-lg text-green-300 outline-none focus:border-indigo-500 max-h-[300px] custom-scrollbar leading-relaxed"
+              />
+            </div>
+          )}
+
+          {/* 2. QR CODE */}
+          {tool.id === "dev-qr" && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">Target Address Link (URL/Text)</label>
+                <input 
+                  type="text"
+                  value={qrText}
+                  onChange={(e) => setQrText(e.target.value)}
+                  className="w-full text-xs bg-slate-950 border border-white/10 p-2.5 rounded-lg text-white font-mono outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 block mb-1">Foreground Color</label>
+                  <input 
+                    type="color"
+                    value={qrForeground}
+                    onChange={(e) => setQrForeground(e.target.value)}
+                    className="h-9 w-full bg-slate-950 rounded border border-white/10 p-0.5 cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-400 block mb-1">Background Color</label>
+                  <input 
+                    type="color"
+                    value={qrBackground}
+                    onChange={(e) => setQrBackground(e.target.value)}
+                    className="h-9 w-full bg-slate-950 rounded border border-white/10 p-0.5 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-2">Sub-Logo Brand Icon Overlay</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { id: "lock", val: "🔒 Lock" },
+                    { id: "envelope", val: "✉ Mail" },
+                    { id: "wifi", val: "📶 WiFi" },
+                    { id: "none", val: "None" }
+                  ].map(logo => (
+                    <button
+                      key={logo.id}
+                      onClick={() => setQrLogo(logo.id as any)}
+                      className={`text-[10.5px] p-2 rounded-lg border text-center transition-all cursor-pointer ${
+                        qrLogo === logo.id ? "bg-indigo-600 border-indigo-400 text-white font-semibold" : "bg-slate-900 border-white/10 text-slate-400"
+                      }`}
+                    >
+                      {logo.val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 3. PASSWORD GENERATOR */}
+          {tool.id === "dev-password" && (
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs font-semibold text-slate-400 block mb-1 leading-none">
+                  <span>Character length</span>
+                  <span className="text-indigo-400 font-mono font-bold">{passLength} chars</span>
+                </div>
+                <input 
+                  type="range"
+                  min="8"
+                  max="64"
+                  value={passLength}
+                  onChange={(e) => setPassLength(parseInt(e.target.value))}
+                  className="w-full h-2 accent-indigo-500 cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2.5">
+                {[
+                  { id: "caps", state: incCaps, setVal: setIncCaps, label: "Uppercase (A-Z)" },
+                  { id: "nums", state: incNums, setVal: setIncNums, label: "Numeric digests (0-9)" },
+                  { id: "syms", state: incSyms, setVal: setIncSyms, label: "Unique symbols (!@#*)" }
+                ].map(opt => (
+                  <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer leading-none">
+                    <input 
+                      type="checkbox"
+                      checked={opt.state}
+                      onChange={(e) => opt.setVal(e.target.checked)}
+                      className="rounded border-white/10 text-indigo-500 accent-indigo-500 focus:ring-0 scale-95"
+                    />
+                    <span className="text-xs text-slate-300 font-sans">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <button
+                onClick={generateSecurePassword}
+                className="w-full mt-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs py-2.5 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Shuffle size={13} /> Re-roll Password
+              </button>
+            </div>
+          )}
+
+          {/* 4. JWT INSPECTOR */}
+          {tool.id === "dev-jwt" && (
+            <div>
+              <label className="text-xs font-semibold text-slate-400 block mb-2 font-sans">Paste JSON Web Token</label>
+              <textarea
+                value={jwtInput}
+                onChange={(e) => setJwtInput(e.target.value)}
+                rows={10}
+                className="w-full text-xs font-mono bg-slate-950 border border-white/10 p-3 rounded-lg text-pink-400 outline-none focus:border-indigo-500 max-h-[300px] custom-scrollbar leading-relaxed"
+              />
+            </div>
+          )}
+
+          {/* 5. ENCODERS AND DECODERS */}
+          {tool.id === "dev-encoders" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setEncoderMode("encode")}
+                  className={`text-xs p-2.5 rounded-lg border text-center transition-all ${
+                    encoderMode === "encode" ? "bg-indigo-600 border-indigo-400 text-white font-bold" : "bg-slate-900 border-white/10 text-slate-400"
+                  }`}
+                >
+                  Base64 Encode
+                </button>
+                <button
+                  onClick={() => setEncoderMode("decode")}
+                  className={`text-xs p-2.5 rounded-lg border text-center transition-all ${
+                    encoderMode === "decode" ? "bg-indigo-600 border-indigo-400 text-white font-bold" : "bg-slate-900 border-white/10 text-slate-400"
+                  }`}
+                >
+                  Base64 Decode
+                </button>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1.5 font-sans">Input Text Source</label>
+                <textarea
+                  value={encoderInput}
+                  onChange={(e) => setEncoderInput(e.target.value)}
+                  rows={6}
+                  className="w-full text-xs font-mono bg-slate-950 border border-white/10 p-3 rounded-lg text-white"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 6. COLOR PALETTE */}
+          {tool.id === "dev-color" && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-white/5">
+                <span className="text-xs text-slate-350 font-sans">Interactive Color Designer</span>
+                <button
+                  onClick={randomizePalette}
+                  className="p-1.5 bg-indigo-600/30 text-indigo-300 rounded border border-indigo-500/10 hover:bg-indigo-600/50 transition-all cursor-pointer select-none leading-none"
+                >
+                  Roll Palette Colors
+                </button>
+              </div>
+
+              <div className="h-28 rounded-xl border border-white/10 overflow-hidden flex shadow-lg">
+                {paletteColors.map((col, i) => (
+                  <div 
+                    key={i}
+                    style={{ backgroundColor: col }}
+                    className="flex-1 flex items-end justify-center pb-2 relative group cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard.writeText(col);
+                      triggerCopyToast();
+                    }}
+                  >
+                    <span className="text-[9px] font-mono font-bold bg-slate-950/80 text-white px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity uppercase shrink-0">
+                      {col}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {errorMsg && (
+            <div className="text-xs bg-red-950/50 border border-red-500/30 text-red-350 p-2.5 rounded-lg mt-4 font-mono">
+              {errorMsg}
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* RIGHT PREVIEWS & TERMINAL */}
+      <div className="lg:col-span-7 flex flex-col min-h-[440px]">
+        <div className="glass-panel rounded-2xl flex-1 flex flex-col overflow-hidden glow-purple bg-slate-950/80">
+          
+          <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-slate-900/60 leading-none">
+            <span className="text-xs text-slate-400 font-mono">active-developer-preview.js</span>
+            {copied && (
+              <span className="text-[10px] bg-indigo-500/15 text-indigo-400 px-2.5 py-1 rounded-full font-sans animate-pulse">
+                Copied to clipboard!
+              </span>
+            )}
+          </div>
+
+          {/* DYNAMIC RENDERS */}
+          <div className="flex-1 p-6 overflow-y-auto max-h-[560px] custom-scrollbar flex flex-col items-center justify-center text-left">
+            
+            {/* 1. JSON VIEW DISPLAY */}
+            {tool.id === "dev-json" && (
+              <div className="w-full space-y-4">
+                
+                {parsedJson ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                    {/* Collapsible tree layout */}
+                    <div className="space-y-1 bg-slate-950 p-4 border border-white/5 rounded-xl max-h-[350px] overflow-auto custom-scrollbar">
+                      <span className="text-[10px] font-bold text-indigo-400 block uppercase tracking-wider font-mono mb-2">JSON Tree explorer</span>
+                      {renderJsonTreeNode(parsedJson)}
+                    </div>
+
+                    {/* Prettier text box */}
+                    <div className="space-y-1 relative">
+                      <span className="text-[10px] font-bold text-green-400 block uppercase tracking-wider font-mono mb-2">Parsed print</span>
+                      <textarea
+                        readOnly
+                        value={beautifiedJson}
+                        className="w-full text-[10.5px] font-mono bg-slate-950 border border-white/5 p-3 rounded-xl scrollbar-none max-h-[320px] resize-none overflow-auto custom-scrollbar"
+                      />
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(beautifiedJson); triggerCopyToast(); }}
+                        className="absolute bottom-3 right-3 p-2 bg-white/5 hover:bg-white/10 text-slate-350 rounded border border-white/10 hover:text-white transition-all cursor-pointer"
+                      >
+                        <Copy size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center p-6 space-y-3 bg-white/5 border border-white/5 rounded-2xl max-w-sm mx-auto">
+                    <Braces size={32} className="text-slate-400 animate-pulse mx-auto" />
+                    <span className="text-xs font-semibold text-red-400 font-mono">Invalid code blocks</span>
+                    <p className="text-[11px] text-slate-400">Please audit spelling syntax gaps in your JSON string in the left text editor.</p>
+                  </div>
+                )}
+
+              </div>
+            )}
+
+            {/* 2. QR PREVIEW DISPLAY */}
+            {tool.id === "dev-qr" && (
+              <div className="flex flex-col items-center justify-center space-y-4 py-3 text-center">
+                <canvas 
+                  ref={qrCanvasRef} 
+                  className="rounded-2xl border border-white/10 shadow-lg overflow-hidden shrink-0 h-60 w-60" 
+                />
+                
+                <button
+                  onClick={downloadQrArtifact}
+                  className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-5 py-3 rounded-xl transition-all shadow-md mt-4 active:translate-y-[1px]"
+                >
+                  <Copy size={13} /> Export Vector PNG
+                </button>
+              </div>
+            )}
+
+            {/* 3. PASSWORD GENERATOR VIEW */}
+            {tool.id === "dev-password" && (
+              <div className="w-full max-w-md space-y-6">
+                
+                <div className="relative">
+                  <input
+                    type="text"
+                    readOnly
+                    value={draftedPassword}
+                    className="w-full text-center bg-slate-950 border border-white/10 text-emerald-400 font-mono font-bold text-lg p-4 rounded-xl pr-12 focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(draftedPassword); triggerCopyToast(); }}
+                    className="absolute right-3.5 top-3.5 p-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded border border-white/10 transition-all cursor-pointer"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+
+                {/* strength gauge block */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs font-semibold leading-none">
+                    <span className="text-slate-400">Security Strength Checklist:</span>
+                    <span className={`uppercase font-bold font-mono text-[11px] ${
+                      strengthMeter === "weak" ? "text-red-400" :
+                      strengthMeter === "medium" ? "text-amber-400" :
+                      strengthMeter === "strong" ? "text-emerald-400 animate-pulse" :
+                      "text-indigo-400 font-extrabold stroke-indigo-400"
+                    }`}>
+                      {strengthMeter} Level
+                    </span>
+                  </div>
+
+                  <div className="h-2 w-full rounded-full bg-slate-900 border border-white/5 overflow-hidden flex">
+                    <span className={`h-full ${
+                      strengthMeter === "weak" ? "bg-red-500" :
+                      strengthMeter === "medium" ? "bg-amber-500" :
+                      strengthMeter === "strong" ? "bg-emerald-500" :
+                      "bg-indigo-500"
+                    }`} style={{ 
+                      width: strengthMeter === "weak" ? "25%" :
+                             strengthMeter === "medium" ? "50%" :
+                             strengthMeter === "strong" ? "75%" : "100%" 
+                    }} />
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/5 rounded-xl p-3.5 text-xs text-slate-350 leading-relaxed font-sans">
+                  Symmetric passwords with entropy above 70 bits remain structurally uncrackable under modern brute-force dictionaries.
+                </div>
+
+              </div>
+            )}
+
+            {/* 4. JWT INSPECTOR SPLITS */}
+            {tool.id === "dev-jwt" && (
+              <div className="w-full space-y-4">
+                {jwtPayload ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-xs">
+                    
+                    <div className="space-y-1 bg-slate-950 p-4 border border-white/5 rounded-xl text-left font-mono overflow-auto max-h-[320px] custom-scrollbar">
+                      <span className="text-[10.5px] font-bold text-pink-400 uppercase tracking-wider block mb-2 leading-none">JWT Header</span>
+                      <pre className="text-pink-300 font-semibold">{jwtHeader}</pre>
+                    </div>
+
+                    <div className="space-y-1 bg-slate-950 p-4 border border-white/5 rounded-xl text-left font-mono overflow-auto max-h-[320px] custom-scrollbar">
+                      <span className="text-[10.5px] font-bold text-violet-400 uppercase tracking-wider block mb-2 leading-none">JWT Claim Payload</span>
+                      <pre className="text-violet-300 font-semibold">{jwtPayload}</pre>
+                    </div>
+
+                  </div>
+                ) : (
+                  <div className="text-center p-6 space-y-2 bg-white/5 border border-white/5 rounded-2xl max-w-sm mx-auto">
+                    <AlertTriangle size={32} className="text-red-400 animate-pulse mx-auto" />
+                    <span className="text-xs font-semibold text-red-400">Token Mismatch</span>
+                    <p className="text-[11px] text-slate-400">Decode parameters failed. Assure tokens are separated by 2 payload dot dots.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 5. BASE64 URL ESAPES VIEW */}
+            {tool.id === "dev-encoders" && (
+              <div className="w-full space-y-4">
+                <div className="space-y-1 relative">
+                  <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider font-mono block">Calculated Output</span>
+                  <textarea
+                    readOnly
+                    value={encoderOutput}
+                    className="w-full text-xs font-mono bg-slate-950 border border-white/15 p-3.5 rounded-xl text-white resize-none h-44 outline-none select-all"
+                  />
+                  {encoderOutput && (
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(encoderOutput); triggerCopyToast(); }}
+                      className="absolute bottom-4 right-4 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded cursor-pointer text-slate-350 hover:text-white"
+                    >
+                      <Copy size={13} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 6. COLOR PALETTE VIEW */}
+            {tool.id === "dev-color" && (
+              <div className="w-full space-y-4">
+                <div className="bg-slate-950 p-4 rounded-xl border border-white/5 text-left font-mono text-xs text-slate-300 space-y-3 bg-transparent">
+                  <span className="text-[10px] text-indigo-400 font-bold tracking-widest block uppercase">Palette Values</span>
+                  {paletteColors.map((col, idx) => (
+                    <div key={idx} className="flex justify-between items-center py-1 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span className="h-3.5 w-3.5 rounded border border-white/10 shadow" style={{ backgroundColor: col }} />
+                        <span className="uppercase text-white font-semibold font-mono text-xs">{col}</span>
+                      </div>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(col); triggerCopyToast(); }}
+                        className="text-[10.5px] hover:text-indigo-400 transition-colors flex items-center gap-1 cursor-pointer font-sans"
+                      >
+                        <Copy size={10} /> Copy HEX
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  );
+}

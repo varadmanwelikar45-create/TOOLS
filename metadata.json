@@ -1,0 +1,6 @@
+{
+  "name": "ToolVerse AI",
+  "description": "Premium All-in-One AI & Productivity Tools Hub featuring AI text generators, code companion, smart utilities, developer tools, and local workspace management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
