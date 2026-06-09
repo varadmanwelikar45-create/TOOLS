@@ -283,10 +283,10 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
         onAddHistory(tool.id, tool.name, `Created digital graphic: "${textPrompt.slice(0, 35)}..."`);
       }
 
-      // Decrement credits or handle achievements
+      // Credits are not decremented as this workspace is fully Pro unlocked
       updateUserState(prev => ({
         ...prev,
-        credits: Math.max(0, prev.credits - 10)
+        credits: 999999
       }));
 
     } catch (err: any) {
@@ -543,9 +543,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
         <div className="glass-panel p-5 rounded-2xl text-left border border-white/5 opacity-85">
           <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1.5 font-mono">Usage guidelines</h4>
           <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-            Your ToolVerse sandbox includes free tokens. Running tools consumes credits. 
-            Need more limits or higher tier models? Modify configurations easily or check the 
-            Pro badge system toggle at the top navigation.
+            Your ToolVerse workspace is fully upgraded to PRO. All tools, model processes, and generators are completely unlocked with unlimited credits!
           </p>
         </div>
       </div>

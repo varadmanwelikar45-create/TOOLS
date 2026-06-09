@@ -26,17 +26,20 @@ export default function App() {
   // --- USER PERSISTENT PROFILE STATE ---
   const [user, setUser] = useState<UserState>(() => {
     const saved = localStorage.getItem("toolverse_user_profile");
-    return saved ? JSON.parse(saved) : {
-      credits: 200,
-      isPro: false,
+    const parsed = saved ? JSON.parse(saved) : {
+      credits: 999999,
+      isPro: true,
       favorites: ["ai-text", "prod-pomo", "dev-qr"],
       history: [],
       achievements: []
     };
+    // Force active subscription and infinite credits on load
+    parsed.isPro = true;
+    parsed.credits = 999999;
+    return parsed;
   });
 
   const [authModal, setAuthModal] = useState(false);
-  const [proCheckoutModal, setProCheckoutModal] = useState(false);
   const [currentProfileName, setCurrentProfileName] = useState<string>(() => {
     return localStorage.getItem("toolverse_username") || "Guest Sandbox User";
   });
@@ -79,7 +82,7 @@ export default function App() {
     };
     setUser(prev => ({
       ...prev,
-      credits: Math.max(0, prev.credits - 5), // consumer simulation cost
+      credits: 999999,
       history: [logItem, ...prev.history.slice(0, 19)]
     }));
   };
@@ -91,7 +94,7 @@ export default function App() {
       const updated = exists 
         ? prev.favorites.filter(id => id !== toolId)
         : [...prev.favorites, toolId];
-      return { ...prev, favorites: updated };
+      return { ...prev, favorites: updated, isPro: true, credits: 999999 };
     });
   };
 
@@ -109,17 +112,12 @@ export default function App() {
     localStorage.setItem("toolverse_username", "Guest Sandbox User");
     localStorage.setItem("toolverse_islogged", "false");
     setUser({
-      credits: 200,
-      isPro: false,
+      credits: 999999,
+      isPro: true,
       favorites: ["ai-text", "prod-pomo", "dev-qr"],
       history: [],
       achievements: []
     });
-  };
-
-  const handleStripeProUnlock = () => {
-    setUser(prev => ({ ...prev, isPro: true, credits: 8000 }));
-    setProCheckoutModal(false);
   };
 
   // Category Color Scheme Helper
@@ -170,21 +168,12 @@ export default function App() {
             
             <div className="hidden sm:flex items-center gap-3 glass px-3.5 py-1.5 rounded-full border border-white/5 text-xs">
               <span className="text-white/60">Balance:</span>
-              <span className="font-mono font-bold text-cyan-400">{user.credits} Credits</span>
+              <span className="font-mono font-bold text-cyan-400">Unlimited Credits</span>
             </div>
 
-            {user.isPro ? (
-              <span className="flex items-center gap-1.5 bg-yellow-400/10 text-yellow-500 border border-yellow-500/15 text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono">
-                <Crown size={11} className="fill-current animate-pulse" /> Pro Member
-              </span>
-            ) : (
-              <button 
-                onClick={() => setProCheckoutModal(true)}
-                className="hidden md:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-indigo-600/20 transition-all cursor-pointer select-none"
-              >
-                Upgrade to Pro
-              </button>
-            )}
+            <span className="flex items-center gap-1.5 bg-yellow-400/10 text-yellow-500 border border-yellow-500/15 text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono">
+              <Crown size={11} className="fill-current animate-pulse" /> Pro Member
+            </span>
 
             {/* Profile Avatar Trigger Button */}
             <button 
@@ -224,44 +213,18 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-slate-500 font-mono">Category / {activeTool.category} /</span>
                 <span className="text-xs font-bold text-white">{activeTool.name}</span>
-                {activeTool.pro && (
-                  <span className="bg-yellow-400/15 text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">PRO</span>
-                )}
-                {user.isPro === false && activeTool.pro ? (
-                  <span className="bg-red-500/15 text-red-400 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-mono tracking-widest animate-pulse">RESTRICTED</span>
-                ) : null}
+                <span className="bg-yellow-400/15 text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">UNLOCKED</span>
               </div>
             </div>
 
-            {/* Content Display Stage - Checking Pro restrictions first */}
-            {activeTool.pro && !user.isPro ? (
-              <div className="glass-panel p-10 max-w-lg mx-auto text-center space-y-6 my-10 border border-white/5 glow-purple">
-                <div className="h-16 w-16 bg-yellow-400/10 rounded-full flex items-center justify-center text-yellow-500 mx-auto border border-yellow-500/10">
-                  <Crown size={28} className="fill-current animate-bounce" />
-                </div>
-                <div className="space-y-2 text-center">
-                  <h3 className="text-lg font-bold text-white">PRO Workspace Restriction</h3>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
-                    The {activeTool.name} is classified as an enterprise toolverse utility. Get unlimited access to cloud AI logs, PDF exporters, and bulk formatters.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setProCheckoutModal(true)}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/25 shadow-lg text-white font-bold py-3 text-xs tracking-wider uppercase rounded-xl transition-all cursor-pointer"
-                >
-                  Unlock Restricted Utilities
-                </button>
-              </div>
-            ) : (
-              <div className="w-full animate-fade-in">
-                {activeTool.category === "ai" && <AiToolsComponent tool={activeTool} userState={user} updateUserState={setUser} onAddHistory={handleAddHistoryLog} />}
-                {activeTool.category === "image" && <ImageToolsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
-                {activeTool.category === "productivity" && <ProductivityToolsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
-                {activeTool.category === "calculator" && <CalculatorsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
-                {activeTool.category === "developer" && <DeveloperToolsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
-                {activeTool.category === "converter" && <ConvertersComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
-              </div>
-            )}
+            <div className="w-full animate-fade-in text-left">
+              {activeTool.category === "ai" && <AiToolsComponent tool={activeTool} userState={user} updateUserState={setUser} onAddHistory={handleAddHistoryLog} />}
+              {activeTool.category === "image" && <ImageToolsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
+              {activeTool.category === "productivity" && <ProductivityToolsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
+              {activeTool.category === "calculator" && <CalculatorsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
+              {activeTool.category === "developer" && <DeveloperToolsComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
+              {activeTool.category === "converter" && <ConvertersComponent tool={activeTool} onAddHistory={handleAddHistoryLog} />}
+            </div>
 
           </div>
 
@@ -383,11 +346,7 @@ export default function App() {
                         {tool.hot && (
                           <span className="pill pill-pro">HOT</span>
                         )}
-                        {tool.pro ? (
-                          <span className="pill pill-pro">PRO</span>
-                        ) : (
-                          <span className="pill pill-free">FREE</span>
-                        )}
+                        <span className="pill pill-free">UNLOCKED</span>
                         <span className="p-1 px-2.5 glass rounded-lg text-white/40 group-hover:text-white group-hover:border-white/20 transition-all font-semibold text-[10px] text-center border border-white/5">
                           &rarr;
                         </span>
@@ -509,56 +468,6 @@ export default function App() {
                 </button>
               )}
             </div>
-
-          </div>
-        </div>
-      )}
-
-
-      {/* PRO CHECKOUT STRIPE GATEWAY MODAL */}
-      {proCheckoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-sm">
-          <div className="glass max-w-md w-full p-6 text-left border border-white/10 shadow-2xl relative rounded-2xl">
-            
-            <button 
-              onClick={() => setProCheckoutModal(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
-            >
-              <X size={15} />
-            </button>
-
-            <div className="flex items-center gap-2.5 mb-2 leading-none">
-              <span className="p-2 bg-yellow-400/10 text-yellow-500 rounded-lg">
-                <Crown size={18} className="fill-current animate-pulse" />
-              </span>
-              <div>
-                <span className="text-[9px] font-bold text-yellow-500 uppercase tracking-widest font-mono">Monetization flows</span>
-                <h3 className="text-md font-bold text-white mt-1">Upgrade workspace model to PRO</h3>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-              Unshackle custom logo vectors in the QR designer, expand high-precision AI document translation grids, and unlock full-limit credits!
-            </p>
-
-            <div className="glass border border-white/10 p-5 rounded-2xl mb-6 space-y-3.5 bg-white/5">
-              <div className="flex justify-between items-center leading-none">
-                <span className="text-xs text-slate-300 font-sans">Enterprise subscription plan</span>
-                <span className="text-lg font-black text-white font-mono">$1.99 / mo</span>
-              </div>
-              
-              <div className="text-[11.5px] text-slate-400 leading-normal space-y-1.5 border-t border-white/5 pt-3">
-                <div className="flex items-center gap-1.5"><ShieldCheck size={11} className="text-emerald-400" /> Instant check-out routed via Stripe sandbox</div>
-                <div className="flex items-center gap-1.5"><ShieldCheck size={11} className="text-emerald-400" /> Razorpay gateway simulated for India</div>
-              </div>
-            </div>
-
-            <button
-              onClick={handleStripeProUnlock}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-black py-3 rounded-xl text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-500/10"
-            >
-              <CreditCard size={13} /> Complete Checkout
-            </button>
 
           </div>
         </div>
