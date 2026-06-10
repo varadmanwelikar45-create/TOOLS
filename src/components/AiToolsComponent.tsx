@@ -19,13 +19,13 @@ interface AiToolsProps {
 
 // Highly robust custom markdown & code highlighting parser
 export function SimpleMarkdownRenderer({ content }: { content: string }) {
-  if (!content) return <span className="text-gray-400">Awaiting your instruction...</span>;
+  if (!content) return <span className="text-zinc-400 font-sans">Awaiting instructions...</span>;
 
   // Split content by code blocks
   const parts = content.split("```");
   
   return (
-    <div className="space-y-4 font-sans text-sm leading-relaxed text-gray-200">
+    <div className="space-y-4 font-sans text-sm leading-relaxed text-zinc-700">
       {parts.map((part, index) => {
         // Even indices are standard markdown text, odd indices are code blocks
         if (index % 2 === 1) {
@@ -48,8 +48,8 @@ export function SimpleMarkdownRenderer({ content }: { content: string }) {
               if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
                 return (
                   <div key={lIdx} className="flex items-start gap-2 pl-4">
-                    <span className="text-violet-400 mt-1.5 h-1.5 w-1.5 rounded-full bg-violet-400 shrink-0" />
-                    <span>{parseInlineMarkdown(trimmed.substring(2))}</span>
+                    <span className="text-indigo-600 mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-600 shrink-0" />
+                    <span className="text-zinc-700">{parseInlineMarkdown(trimmed.substring(2))}</span>
                   </div>
                 );
               }
@@ -59,24 +59,24 @@ export function SimpleMarkdownRenderer({ content }: { content: string }) {
                 const match = trimmed.match(/^(\d+)\.\s(.*)/);
                 return (
                   <div key={lIdx} className="flex items-start gap-2 pl-4">
-                    <span className="text-violet-400 font-mono text-xs shrink-0 mt-0.5">{match ? match[1] : lIdx}.</span>
-                    <span>{parseInlineMarkdown(match ? match[2] : trimmed)}</span>
+                    <span className="text-indigo-600 font-mono text-xs shrink-0 mt-0.5">{match ? match[1] : lIdx}.</span>
+                    <span className="text-zinc-700">{parseInlineMarkdown(match ? match[2] : trimmed)}</span>
                   </div>
                 );
               }
 
               // Headers
               if (trimmed.startsWith("### ")) {
-                return <h4 key={lIdx} className="text-md font-semibold text-white mt-4">{parseInlineMarkdown(trimmed.substring(4))}</h4>;
+                return <h4 key={lIdx} className="text-sm font-bold text-zinc-900 mt-4">{parseInlineMarkdown(trimmed.substring(4))}</h4>;
               }
               if (trimmed.startsWith("## ")) {
-                return <h3 key={lIdx} className="text-lg font-bold text-white mt-6 border-b border-white/10 pb-1">{parseInlineMarkdown(trimmed.substring(3))}</h3>;
+                return <h3 key={lIdx} className="text-base font-extrabold text-zinc-900 mt-6 border-b border-zinc-100 pb-1">{parseInlineMarkdown(trimmed.substring(3))}</h3>;
               }
               if (trimmed.startsWith("# ")) {
-                return <h2 key={lIdx} className="text-xl font-extrabold text-white mt-8">{parseInlineMarkdown(trimmed.substring(2))}</h2>;
+                return <h2 key={lIdx} className="text-lg font-black text-zinc-900 mt-8">{parseInlineMarkdown(trimmed.substring(2))}</h2>;
               }
 
-              return <p key={lIdx} className="text-gray-300 leading-relaxed">{parseInlineMarkdown(trimmed)}</p>;
+              return <p key={lIdx} className="text-zinc-750 leading-relaxed">{parseInlineMarkdown(trimmed)}</p>;
             })}
           </div>
         );
@@ -89,14 +89,14 @@ function parseInlineMarkdown(text: string): React.ReactNode[] {
   const parts = text.split(/(\*\*.*?\*\*)/g);
   return parts.map((part, index) => {
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index} className="font-extrabold text-white">{part.slice(2, -2)}</strong>;
+      return <strong key={index} className="font-extrabold text-zinc-900">{part.slice(2, -2)}</strong>;
     }
     // Handle inline code `code`
     const codeParts = part.split(/(`.*?`)/g);
     if (codeParts.length > 1) {
       return codeParts.map((sub, sIdx) => {
         if (sub.startsWith("`") && sub.endsWith("`")) {
-          return <code key={sIdx} className="font-mono text-xs bg-slate-900 px-1.5 py-0.5 rounded border border-white/15 text-pink-400 font-medium">{sub.slice(1, -1)}</code>;
+          return <code key={sIdx} className="font-mono text-xs bg-zinc-105 border border-zinc-200 text-pink-650 font-medium px-1.5 py-0.5 rounded">{sub.slice(1, -1)}</code>;
         }
         return sub;
       });
@@ -121,18 +121,18 @@ function CodeSnippet({ code, language }: CodeSnippetProps) {
   };
 
   return (
-    <div className="rounded-xl overflow-hidden border border-white/10 bg-slate-950 font-mono text-xs shadow-lg my-4">
-      <div className="flex items-center justify-between bg-slate-900 border-b border-white/5 px-4 py-2">
-        <span className="text-violet-400 text-[10px] uppercase font-bold tracking-wider">{language}</span>
+    <div className="rounded-xl overflow-hidden border border-zinc-700 bg-zinc-950 font-mono text-xs shadow-md my-4">
+      <div className="flex items-center justify-between bg-zinc-900 border-b border-zinc-800 px-4 py-2">
+        <span className="text-indigo-400 text-[10px] uppercase font-bold tracking-wider">{language}</span>
         <button 
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 rounded"
+          className="flex items-center gap-1.5 text-[11px] text-zinc-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 px-2 py-1 rounded"
         >
           {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="p-4 overflow-x-auto text-gray-200 text-left leading-relaxed max-h-96 custom-scrollbar"><code>{code}</code></pre>
+      <pre className="p-4 overflow-x-auto text-zinc-350 text-left leading-relaxed max-h-96 custom-scrollbar"><code>{code}</code></pre>
     </div>
   );
 }
@@ -325,26 +325,26 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
       
       {/* LEFT: Inputs & Control Settings */}
       <div className="lg:col-span-5 flex flex-col gap-6">
-        <div className="glass-panel p-6 rounded-2xl glow-indigo text-left relative overflow-hidden">
+        <div className="bg-white border border-zinc-200 p-6 rounded-2xl text-left relative overflow-hidden shadow-sm">
           {/* Subtle Accent Glow */}
-          <div className="absolute top-0 right-0 h-24 w-24 bg-violet-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 h-24 w-24 bg-violet-500/5 rounded-full blur-2xl pointer-events-none" />
           
           <div className="flex items-center gap-3 mb-4">
-            <span className="p-3 bg-indigo-500/20 text-indigo-400 rounded-xl">
-              {tool.id === "ai-image" ? <Sparkles size={22} className="animate-pulse" /> :
-               tool.id === "ai-text" ? <FileText size={22} /> :
-               tool.id === "ai-code" ? <Code size={22} /> :
-               tool.id === "ai-chat" ? <MessageSquare size={22} /> :
-               tool.id === "ai-summarizer" ? <Files size={22} /> :
-               <SpellCheck size={22} />}
+            <span className="p-3 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl">
+              {tool.id === "ai-image" ? <Sparkles size={20} /> :
+               tool.id === "ai-text" ? <FileText size={20} /> :
+               tool.id === "ai-code" ? <Code size={20} /> :
+               tool.id === "ai-chat" ? <MessageSquare size={20} /> :
+               tool.id === "ai-summarizer" ? <Files size={20} /> :
+               <SpellCheck size={20} />}
             </span>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">{tool.name}</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Gemini GenAI Processor</p>
+              <h3 className="text-base font-bold text-zinc-900 tracking-tight">{tool.name}</h3>
+              <p className="text-[10px] text-zinc-400 font-semibold tracking-wider uppercase mt-0.5">Gemini Processor Engine</p>
             </div>
           </div>
 
-          <p className="text-xs text-slate-300 leading-relaxed bg-white/5 p-3 rounded-lg border border-white/5 mb-6">
+          <p className="text-xs text-zinc-500 leading-relaxed bg-zinc-50 p-3.5 rounded-xl border border-zinc-150 mb-6 font-sans">
             {tool.description}
           </p>
 
@@ -352,9 +352,9 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
 
           {/* AI IMAGE CONTROLS */}
           {tool.id === "ai-image" && (
-            <div className="space-y-4">
+            <div className="space-y-4 mb-5">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-2">Creative Format & Engine</label>
+                <label className="text-xs font-bold text-zinc-750 block mb-2 font-sans uppercase tracking-wider text-[10px]">Creative Format & Engine</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { val: "vector", label: "Scalable Vector (SVG)" },
@@ -365,10 +365,10 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                     <button
                       key={styleOpt.val}
                       onClick={() => setImageStyle(styleOpt.val as any)}
-                      className={`text-xs p-2.5 rounded-lg border text-center transition-all ${
+                      className={`text-xs p-2.5 rounded-lg border text-base text-center transition-all cursor-pointer font-semibold ${
                         imageStyle === styleOpt.val 
-                          ? "bg-indigo-600 border-indigo-400 text-white font-medium" 
-                          : "bg-slate-900 border-white/10 text-slate-400 hover:bg-slate-800 hover:text-white"
+                          ? "bg-zinc-900 border-zinc-900 text-white" 
+                          : "bg-zinc-50 border-zinc-200 text-zinc-650 hover:bg-zinc-100 hover:text-zinc-900"
                       }`}
                     >
                       {styleOpt.label}
@@ -381,7 +381,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
 
           {/* AI TEXT CONTROLS */}
           {tool.id === "ai-text" && (
-            <div className="space-y-4 mb-4">
+            <div className="space-y-4 mb-5">
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: "blog", name: "SEO Blog Post" },
@@ -392,10 +392,10 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                   <button
                     key={subtype.id}
                     onClick={() => setTextSubtype(subtype.id as any)}
-                    className={`text-xs p-2.5 rounded-lg border text-center transition-all ${
+                    className={`text-xs p-2.5 rounded-lg border text-center transition-all cursor-pointer font-semibold ${
                       textSubtype === subtype.id
-                        ? "bg-gradient-to-r from-indigo-600 to-indigo-700 border-indigo-400 text-white font-medium shadow-md shadow-indigo-900/40"
-                        : "bg-slate-900 border-white/10 text-slate-400 hover:bg-slate-850 hover:text-white"
+                        ? "bg-zinc-900 border-zinc-900 text-white shadow-sm"
+                        : "bg-zinc-50 border-zinc-200 text-zinc-650 hover:bg-zinc-100 hover:text-zinc-900"
                     }`}
                   >
                     {subtype.name}
@@ -404,16 +404,16 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-2">Adjust Tone Matrix</label>
+                <label className="text-xs font-bold text-zinc-750 block mb-2 font-sans uppercase tracking-wider text-[10px]">Adjust Tone Matrix</label>
                 <div className="flex gap-2">
                   {["creative", "professional", "casual"].map(tone => (
                     <button
                       key={tone}
                       onClick={() => setTextTone(tone as any)}
-                      className={`text-[11px] px-3 py-1.5 rounded-full capitalize border transition-all flex-1 ${
+                      className={`text-[11px] py-1.5 rounded-full capitalize border transition-all flex-1 cursor-pointer font-bold ${
                         textTone === tone 
-                          ? "bg-violet-900/60 border-violet-500 text-violet-200 font-medium" 
-                          : "bg-slate-900 border-white/15 text-slate-400 hover:bg-slate-800"
+                          ? "bg-indigo-50 border-indigo-200 text-indigo-700 font-bold" 
+                          : "bg-white border-zinc-200 text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900"
                       }`}
                     >
                       {tone}
@@ -426,9 +426,9 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
 
           {/* AI CODE CONTROLS */}
           {tool.id === "ai-code" && (
-            <div className="space-y-4 mb-4">
+            <div className="space-y-4 mb-5">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-2 font-mono">Select Code Action</label>
+                <label className="text-xs font-bold text-zinc-750 block mb-2 font-sans uppercase tracking-wider text-[10px]">Select Code Action</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: "write", label: "Write Boilerplate" },
@@ -439,10 +439,10 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                     <button
                       key={action.id}
                       onClick={() => setCodeAction(action.id as any)}
-                      className={`text-xs p-2.5 rounded-lg border text-center transition-all ${
+                      className={`text-xs p-2.5 rounded-lg border text-center transition-all cursor-pointer font-semibold ${
                         codeAction === action.id
-                          ? "bg-indigo-600 border-indigo-400 text-white font-medium font-mono"
-                          : "bg-slate-900 border-white/10 text-slate-400 hover:bg-slate-850 hover:text-white font-mono"
+                          ? "bg-zinc-900 border-zinc-900 text-white font-semibold"
+                          : "bg-zinc-50 border-zinc-200 text-zinc-650 hover:bg-zinc-100 hover:text-zinc-900"
                       }`}
                     >
                       {action.label}
@@ -453,11 +453,11 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
 
               {codeAction === "convert" && (
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 block mb-1.5 font-mono">Target Language</label>
+                  <label className="text-xs font-bold text-zinc-75s block mb-1.5 font-sans uppercase tracking-wider text-[10px]">Target Language</label>
                   <select
                     value={codeLanguage}
                     onChange={(e) => setCodeLanguage(e.target.value)}
-                    className="w-full text-xs bg-slate-950 border border-white/15 text-white p-2.5 rounded-lg outline-none focus:border-indigo-500 font-mono"
+                    className="w-full text-xs bg-zinc-50 border border-zinc-200 text-zinc-800 p-2.5 rounded-lg outline-none focus:border-zinc-400 font-sans cursor-pointer font-semibold"
                   >
                     <option>TypeScript/React</option>
                     <option>Python</option>
@@ -473,9 +473,9 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
 
           {/* AI SUMMARIZER CONTROLS */}
           {tool.id === "ai-summarizer" && (
-            <div className="space-y-4 mb-4">
+            <div className="space-y-4 mb-5">
               <div>
-                <label className="text-xs font-semibold text-slate-400 block mb-2">Target Summary Length</label>
+                <label className="text-xs font-bold text-zinc-750 block mb-2 font-sans uppercase tracking-wider text-[10px]">Target Summary Length</label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
                     { id: "bullets", val: "Key Bullets" },
@@ -485,10 +485,10 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                     <button
                       key={len.id}
                       onClick={() => setSummarizeLength(len.id as any)}
-                      className={`text-[11px] p-2 rounded-lg border text-center transition-all ${
+                      className={`text-[11px] p-2 rounded-lg border text-center transition-all cursor-pointer font-bold ${
                         summarizeLength === len.id
-                          ? "bg-indigo-600 border-indigo-400 text-white"
-                          : "bg-slate-900 border-white/10 text-slate-400 hover:bg-slate-850 hover:text-white"
+                          ? "bg-zinc-900 border-zinc-900 text-white"
+                          : "bg-zinc-50 border-zinc-200 text-zinc-650 hover:bg-zinc-100 hover:text-zinc-900"
                       }`}
                     >
                       {len.val}
@@ -502,8 +502,8 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
           {/* Main prompt input box */}
           {tool.id !== "ai-chat" && (
             <div className="mt-4">
-              <label className="text-xs font-semibold text-slate-400 block mb-2">
-                {tool.id === "ai-image" ? "What would you like to design?" : "Enter prompt / Context input"}
+              <label className="text-xs font-bold text-zinc-750 block mb-2 uppercase tracking-wide text-[10px]">
+                {tool.id === "ai-image" ? "What would you like to design?" : "Enter Prompt / Context Input"}
               </label>
               <textarea
                 value={textPrompt}
@@ -516,13 +516,13 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                   'e.g., "Enter text that needs spelling and structural flow checks..."'
                 }
                 rows={6}
-                className="w-full text-xs bg-slate-950 border border-white/10 text-slate-200 placeholder-slate-500 p-3.5 rounded-xl focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all leading-relaxed custom-scrollbar"
+                className="w-full text-xs bg-zinc-50 border border-zinc-200 text-zinc-850 placeholder-zinc-400 p-3.5 rounded-xl focus:border-zinc-400 focus:bg-white outline-none transition-all leading-relaxed custom-scrollbar font-sans"
               />
             </div>
           )}
 
           {errorMsg && (
-            <div className="text-xs bg-red-950/40 border border-red-500/20 text-red-300 p-3 rounded-lg leading-relaxed mt-4 font-sans text-left">
+            <div className="text-xs bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg leading-relaxed mt-4 font-sans text-left">
               {errorMsg}
             </div>
           )}
@@ -531,7 +531,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
             <button
               onClick={() => handleRunAiTool()}
               disabled={loading}
-              className="w-full mt-5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white py-3.5 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-indigo-500/20 active:translate-y-[1px] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full mt-5 bg-zinc-900 hover:bg-zinc-800 text-white py-3 rounded-xl text-xs font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
             >
               {loading ? <RefreshCw className="animate-spin" size={14} /> : <Zap size={14} className="fill-current" />}
               {loading ? "Generating Core Models..." : "Process AI Tool"}
@@ -540,9 +540,9 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
         </div>
 
         {/* Dynamic usage tips widget */}
-        <div className="glass-panel p-5 rounded-2xl text-left border border-white/5 opacity-85">
-          <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1.5 font-mono">Usage guidelines</h4>
-          <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+        <div className="bg-zinc-50 border border-zinc-200 p-5 rounded-2xl text-left shadow-sm">
+          <h4 className="text-[10px] font-bold text-zinc-755 uppercase tracking-wider mb-1">Sandbox Guidelines</h4>
+          <p className="text-[11px] text-zinc-500 leading-relaxed font-sans">
             Your ToolVerse workspace is fully upgraded to PRO. All tools, model processes, and generators are completely unlocked with unlimited credits!
           </p>
         </div>
@@ -551,19 +551,18 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
       {/* RIGHT: Results & Terminals */}
       <div className="lg:col-span-7 flex flex-col min-h-[480px]">
         {/* Terminals space */}
-        <div className="glass-panel rounded-2xl flex-1 flex flex-col overflow-hidden glow-purple text-left border border-white/10 bg-slate-950/80">
+        <div className="bg-white border border-zinc-150 rounded-2xl flex-1 flex flex-col overflow-hidden text-left shadow-sm">
           
           {/* Header bar of Result */}
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 bg-slate-900/60 leading-none">
+          <div className="flex items-center justify-between border-b border-zinc-150 px-6 py-4 bg-zinc-50 leading-none">
             <div className="flex items-center gap-2">
-              <span className="h-3 w-3 bg-red-500 rounded-full shrink-0" />
-              <span className="h-3 w-3 bg-yellow-500 rounded-full shrink-0" />
-              <span className="h-3 w-3 bg-green-500 rounded-full shrink-0" />
-              <span className="text-xs text-slate-400 ml-2 font-mono">toolverse-output-v1.0.sh</span>
+              <span className="text-xs font-extrabold text-zinc-700 font-sans flex items-center gap-1.5">
+                <Bot size={14} className="text-zinc-500 shrink-0" /> Unified Output Terminal
+              </span>
             </div>
             
             {loading && (
-              <span className="text-[10px] bg-indigo-500/10 text-indigo-300 px-2 py-1 rounded font-mono flex items-center gap-1.5 animate-pulse">
+              <span className="text-[10px] bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-1 rounded font-semibold flex items-center gap-1.5 animate-pulse">
                 <RefreshCw size={10} className="animate-spin" /> MODEL_RUNNING
               </span>
             )}
@@ -574,7 +573,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
             
             {/* 1. CHAT MESSAGES DISPLAY */}
             {tool.id === "ai-chat" ? (
-              <div className="space-y-4 flex flex-col h-full">
+              <div className="space-y-4 flex flex-col h-full justify-between">
                 <div className="flex-1 space-y-4">
                   {chatMessages.map((msg, i) => (
                     <div
@@ -584,14 +583,14 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                       }`}
                     >
                       <div className={`p-2.5 rounded-full ${
-                        msg.role === "user" ? "bg-indigo-600/30 text-indigo-400" : "bg-purple-950/40 text-purple-400"
-                      } h-9 w-9 shrink-0 flex items-center justify-center border border-white/5`}>
-                        {msg.role === "user" ? <User size={16} /> : <Bot size={16} />}
+                        msg.role === "user" ? "bg-indigo-100 text-indigo-750 border border-indigo-200" : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                      } h-9 w-9 shrink-0 flex items-center justify-center`}>
+                        {msg.role === "user" ? <User size={15} /> : <Bot size={15} />}
                       </div>
                       <div className={`p-4 rounded-2xl text-left border ${
                         msg.role === "user" 
-                          ? "bg-indigo-950/30 border-indigo-500/20 text-gray-200" 
-                          : "bg-slate-900/60 border-purple-500/10 text-gray-200"
+                          ? "bg-indigo-50 border-indigo-100/50 text-zinc-800" 
+                          : "bg-zinc-50 border-zinc-150 text-zinc-850"
                       }`}>
                         <SimpleMarkdownRenderer content={msg.text} />
                       </div>
@@ -601,20 +600,20 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                 </div>
 
                 {/* Inline chat form */}
-                <form onSubmit={handleRunAiTool} className="mt-auto pt-4 border-t border-white/5 flex gap-2">
+                <form onSubmit={handleRunAiTool} className="mt-8 pt-4 border-t border-zinc-200 flex gap-2">
                   <input
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Ask ToolVerse anything..."
                     disabled={loading}
-                    className="flex-1 bg-slate-900 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3 text-xs outline-none focus:border-indigo-500 transition-all font-sans"
+                    className="flex-1 bg-zinc-50 border border-zinc-200 text-zinc-805 placeholder-zinc-400 rounded-lg px-4 py-3 text-xs outline-none focus:border-zinc-400 focus:bg-white transition-all font-sans shadow-inner"
                   />
                   <button
                     type="submit"
                     disabled={loading || !chatInput.trim()}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-4 py-3 hover:shadow-lg disabled:opacity-40 transition-all"
+                    className="bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg px-4 py-3 transition-all cursor-pointer font-semibold text-xs flex items-center justify-center shrink-0"
                   >
-                    <Send size={14} />
+                    <Send size={13} />
                   </button>
                 </form>
               </div>
@@ -628,19 +627,19 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                     
                     {/* Mode Toggle Code vs Render */}
                     {generatedSvgCode && (
-                      <div className="flex gap-1 bg-white/5 border border-white/10 p-1 rounded-lg">
+                      <div className="flex gap-1 bg-zinc-50 border border-zinc-200 p-1 rounded-lg">
                         <button
                           onClick={() => setPreviewMode("visual")}
-                          className={`text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
-                            previewMode === "visual" ? "bg-indigo-600 text-white font-medium" : "text-slate-400 hover:text-white"
+                          className={`text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                            previewMode === "visual" ? "bg-white border border-zinc-200 text-zinc-850 font-bold shadow-sm" : "text-zinc-500 hover:text-zinc-800"
                           }`}
                         >
                           <Eye size={12} /> Render Canvas
                         </button>
                         <button
                           onClick={() => setPreviewMode("code")}
-                          className={`text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
-                            previewMode === "code" ? "bg-indigo-600 text-white font-medium font-mono" : "text-slate-400 hover:text-white font-mono"
+                          className={`text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all cursor-pointer ${
+                            previewMode === "code" ? "bg-white border border-zinc-200 text-zinc-850 font-bold font-mono shadow-sm" : "text-zinc-500 hover:text-zinc-800 font-mono"
                           }`}
                         >
                           <Code size={12} /> Source Code
@@ -648,7 +647,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                       </div>
                     )}
 
-                    <div className="w-full max-w-sm aspect-square bg-slate-900 rounded-2xl overflow-hidden border border-white/10 shadow-inner flex items-center justify-center p-6 relative">
+                    <div className="w-full max-w-sm aspect-square bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-250 shadow-inner flex items-center justify-center p-6 relative">
                       {previewMode === "visual" && generatedSvgCode ? (
                         <div 
                           className="w-full h-full flex items-center justify-center svg-container [&>svg]:max-w-full [&>svg]:max-h-full"
@@ -658,7 +657,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                         <textarea
                           readOnly
                           value={generatedSvgCode}
-                          className="w-full h-full bg-slate-950 text-[10px] font-mono text-zinc-300 p-4 rounded-xl border border-white/5 resize-none custom-scrollbar"
+                          className="w-full h-full bg-zinc-950 text-[10px] font-mono text-zinc-300 p-4 rounded-xl border border-zinc-850 resize-none custom-scrollbar"
                         />
                       ) : (
                         <img 
@@ -673,22 +672,22 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
                     <div className="flex gap-3">
                       <button
                         onClick={generatedSvgCode ? handleDownloadSVG : handleDownloadImage}
-                        className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:translate-y-[1px]"
+                        className="flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs px-4 py-2.5 rounded-lg font-bold transition-all shadow-sm cursor-pointer"
                       >
                         <Download size={13} /> {generatedSvgCode ? "Download Vector SVG" : "Download PNG Graphic"}
                       </button>
                       <button
                         onClick={() => { setGeneratedSvgCode(""); setGeneratedImg(""); }}
-                        className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs px-4 py-2.5 rounded-xl font-bold transition-all"
+                        className="bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 text-zinc-650 text-xs px-4 py-2.5 rounded-lg font-bold transition-all cursor-pointer"
                       >
                         Refresh Canvas
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-w-xs p-6 border border-white/5 rounded-2xl bg-white/5">
-                    <Sparkles size={36} className="text-indigo-400 animate-float mx-auto" />
-                    <p className="text-xs text-slate-300">
+                  <div className="space-y-4 max-w-xs p-6 border border-zinc-200 rounded-xl bg-zinc-50 mx-auto">
+                    <Sparkles size={32} className="text-zinc-400 mx-auto" />
+                    <p className="text-xs text-zinc-505 leading-relaxed font-sans">
                       Submit a creative description to invoke our multi-agent model logic. It will deliver robust high fidelity vectors or deep digital canvas illustrations.
                     </p>
                   </div>
@@ -701,23 +700,25 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
               <div className="font-sans">
                 {response ? (
                   <div className="relative">
-                    <div className="absolute top-0 right-0">
+                    <div className="absolute top-0 right-0 z-10">
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(response);
                         }}
-                        className="flex items-center gap-1 bg-white/5 hover:bg-white/10 text-xs px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all"
+                        className="flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 text-xs px-3 py-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 transition-all cursor-pointer font-semibold"
                       >
                         <Copy size={12} /> Copy Output
                       </button>
                     </div>
-                    <SimpleMarkdownRenderer content={response} />
+                    <div className="pt-10">
+                      <SimpleMarkdownRenderer content={response} />
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-center h-64 text-slate-400 gap-3">
-                    <Bot size={40} className="text-slate-500 animate-pulse" />
+                  <div className="flex flex-col items-center justify-center text-center py-20 text-zinc-400 gap-3">
+                    <Bot size={36} className="text-zinc-350" />
                     <div>
-                      <p className="text-xs text-slate-300 max-w-xs">
+                      <p className="text-xs text-zinc-500 max-w-xs leading-relaxed font-sans">
                         Configure options on the left and hit 'Process AI Tool' to stream instant outputs.
                       </p>
                     </div>

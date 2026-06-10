@@ -57,6 +57,47 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [activeToolId, setActiveToolId] = useState<string | null>(null);
 
+  // Synchronize history/back-button navigation with activeToolId state
+  useEffect(() => {
+    const handleHashAndStateSync = () => {
+      const hash = window.location.hash;
+      const match = hash.match(/^#\/tool\/(.+)$/);
+      if (match) {
+        const urlToolId = match[1];
+        if (TOOL_CATALOG.some(t => t.id === urlToolId)) {
+          setActiveToolId(urlToolId);
+        } else {
+          setActiveToolId(null);
+        }
+      } else {
+        setActiveToolId(null);
+      }
+    };
+
+    handleHashAndStateSync();
+
+    window.addEventListener("hashchange", handleHashAndStateSync);
+    window.addEventListener("popstate", handleHashAndStateSync);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashAndStateSync);
+      window.removeEventListener("popstate", handleHashAndStateSync);
+    };
+  }, []);
+
+  const handleSelectTool = (toolId: string | null) => {
+    if (toolId) {
+      window.location.hash = `#/tool/${toolId}`;
+    } else {
+      if (window.history.pushState) {
+        window.history.pushState("", document.title, window.location.pathname + window.location.search);
+      } else {
+        window.location.hash = "";
+      }
+    }
+    setActiveToolId(toolId);
+  };
+
   // Filter Logic
   const filteredTools = TOOL_CATALOG.filter(tool => {
     const matchesSearch = 
@@ -120,70 +161,70 @@ export default function App() {
     });
   };
 
-  // Category Color Scheme Helper
+  // Category Color Scheme Helper (Rebuilt with ultra-polished premium light pastel shades)
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "ai": return { bg: "bg-indigo-500/10 border-indigo-500/15", text: "text-indigo-400" };
-      case "image": return { bg: "bg-cyan-500/10 border-cyan-500/15", text: "text-cyan-400" };
-      case "productivity": return { bg: "bg-emerald-500/10 border-emerald-500/15", text: "text-emerald-400" };
-      case "calculator": return { bg: "bg-amber-500/10 border-amber-500/15", text: "text-amber-400" };
-      case "converter": return { bg: "bg-purple-500/10 border-purple-500/15", text: "text-purple-400" };
-      case "developer": return { bg: "bg-pink-500/10 border-pink-500/15", text: "text-pink-400" };
-      default: return { bg: "bg-white/5 border-white/10", text: "text-white/80" };
+      case "ai": return { bg: "bg-indigo-50 border-indigo-100", text: "text-indigo-600" };
+      case "image": return { bg: "bg-sky-50 border-sky-100", text: "text-sky-600" };
+      case "productivity": return { bg: "bg-emerald-50 border-emerald-100", text: "text-emerald-700" };
+      case "calculator": return { bg: "bg-amber-50 border-amber-100", text: "text-amber-700" };
+      case "converter": return { bg: "bg-purple-50 border-purple-100", text: "text-purple-600" };
+      case "developer": return { bg: "bg-zinc-100 border-zinc-200", text: "text-zinc-800" };
+      default: return { bg: "bg-zinc-50 border-zinc-150", text: "text-zinc-700" };
     }
   };
 
   // Icon Matcher Helper
-  const getDynamicIconComponent = (name: string, className = "text-indigo-400 shrink-0", size = 18) => {
+  const getDynamicIconComponent = (name: string, className = "text-indigo-600 shrink-0", size = 18) => {
     const IconC = (Icons as any)[name] || Icons.HelpCircle;
     return <IconC className={className} size={size} />;
   };
 
   return (
-    <div className="min-h-screen premium-gradient text-zinc-50 font-sans flex flex-col items-center relative overflow-x-hidden">
+    <div className="min-h-screen premium-gradient text-zinc-800 font-sans flex flex-col items-center relative overflow-x-hidden">
       
-      {/* 1. SOLID GRADIENT BACKGROUND FLUID DECORATION */}
-      <div className="fixed top-[-10%] left-[-15%] h-[400px] w-[400px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="fixed bottom-[-10%] right-[-15%] h-[400px] w-[400px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
+      {/* 1. SOFT GRADIENT BACKGROUND DECORATIONS */}
+      <div className="fixed top-[-10%] left-[-15%] h-[400px] w-[400px] bg-indigo-600/[0.03] rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="fixed bottom-[-10%] right-[-15%] h-[400px] w-[400px] bg-sky-600/[0.03] rounded-full blur-[100px] pointer-events-none z-0" />
 
-      {/* 2. NAVIGATION BAR */}
-      <nav className="w-full sticky top-0 border-b border-white/5 glass z-50">
+      {/* 2. PREMIUM NAVIGATION BAR */}
+      <nav className="w-full sticky top-0 border-b border-zinc-200/80 bg-white/90 backdrop-blur-md z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           
           {/* Logo Title */}
           <div 
-            onClick={() => setActiveToolId(null)}
+            onClick={() => handleSelectTool(null)}
             className="flex items-center gap-2.5 cursor-pointer select-none group"
           >
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-105 transition-all shadow-lg shadow-indigo-600/20">
+            <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-102 transition-all shadow-md shadow-zinc-900/10">
               V
             </div>
-            <span className="text-xl font-bold tracking-tight text-white select-none">
-              ToolVerse <span className="accent-text font-extrabold text-indigo-400">AI</span>
+            <span className="text-lg font-bold tracking-tight text-zinc-900 select-none">
+              ToolVerse <span className="text-indigo-600 font-extrabold uppercase text-sm">Workspace</span>
             </span>
           </div>
 
-          {/* Quick Stats & User Status */}
-          <div className="flex items-center gap-4">
+          {/* User Status and Menu Indicators */}
+          <div className="flex items-center gap-3">
             
-            <div className="hidden sm:flex items-center gap-3 glass px-3.5 py-1.5 rounded-full border border-white/5 text-xs">
-              <span className="text-white/60">Balance:</span>
-              <span className="font-mono font-bold text-cyan-400">Unlimited Credits</span>
+            <div className="hidden sm:flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-3.5 py-1.5 rounded-full text-xs text-zinc-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
+              <span className="font-medium">All Models Unlocked</span>
             </div>
 
-            <span className="flex items-center gap-1.5 bg-yellow-400/10 text-yellow-500 border border-yellow-500/15 text-[10px] font-black uppercase px-2.5 py-1 rounded-full font-mono">
-              <Crown size={11} className="fill-current animate-pulse" /> Pro Member
+            <span className="flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full font-sans">
+              <Crown size={11} className="text-amber-600 fill-current" /> Pro Member
             </span>
 
-            {/* Profile Avatar Trigger Button */}
+            {/* Profile Avatar Button */}
             <button 
               onClick={() => setAuthModal(true)}
-              className="flex items-center gap-2 glass hover:bg-white/10 px-3.5 py-1.5 rounded-full transition-all cursor-pointer outline-none text-left"
+              className="flex items-center gap-1.5 bg-white border border-zinc-200 hover:bg-zinc-50 px-3.5 py-1.5 rounded-full transition-all cursor-pointer outline-none text-left shadow-sm"
             >
-              <span className="h-5 w-5 bg-indigo-500/20 text-indigo-400 text-xs font-extrabold rounded-full flex items-center justify-center">
+              <span className="h-5 w-5 bg-zinc-900 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 {currentProfileName.charAt(0).toUpperCase()}
               </span>
-              <span className="text-[11px] font-semibold text-white/80 max-w-[90px] truncate hidden sm:inline">
+              <span className="text-[11px] font-semibold text-zinc-700 max-w-[95px] truncate hidden sm:inline">
                 {currentProfileName}
               </span>
             </button>
@@ -193,27 +234,27 @@ export default function App() {
         </div>
       </nav>
 
-      {/* 3. CORE LAYOUT FRAME */}
+      {/* 3. CORE APPMARK WORKSPACE CONTAINER */}
       <main className="w-full flex-1 max-w-7xl px-6 py-10 z-10 flex flex-col gap-10">
 
         {activeTool ? (
           
-          // --- STAGE A: EXPANDED ACTIVE WORKSPACE WRAPPING STAGE ---
+          // --- WORKSPACE IN ACTIVE VIEW STATE ---
           <div className="space-y-6 text-left">
             
-            {/* Breadcrumb row */}
-            <div className="flex flex-wrap items-center justify-between gap-4 py-2 border-b border-white/5">
+            {/* Breadcrumb Workspace Row */}
+            <div className="flex flex-wrap items-center justify-between gap-4 py-3 border-b border-zinc-200/60">
               <button
-                onClick={() => setActiveToolId(null)}
-                className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-all cursor-pointer leading-none"
+                onClick={() => handleSelectTool(null)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 transition-all cursor-pointer leading-none"
               >
-                <ArrowLeft size={14} /> Back to Catalog Deck
+                <ArrowLeft size={13} /> Back to Toolkit Catalog
               </button>
               
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500 font-mono">Category / {activeTool.category} /</span>
-                <span className="text-xs font-bold text-white">{activeTool.name}</span>
-                <span className="bg-yellow-400/15 text-yellow-500 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">UNLOCKED</span>
+                <span className="text-xs text-zinc-400 font-sans">Category / {activeTool.category} /</span>
+                <span className="text-xs font-bold text-zinc-800">{activeTool.name}</span>
+                <span className="bg-emerald-50 text-emerald-700 text-[9px] border border-emerald-200 font-bold px-1.5 py-0.5 rounded uppercase">Fully Equipped</span>
               </div>
             </div>
 
@@ -230,42 +271,42 @@ export default function App() {
 
         ) : (
           
-          // --- STAGE B: CENTRAL DIRECTORY & HERO LAYOUT ---
+          // --- DIRECTORY HOME & TOOL SELECTION ---
           <div className="space-y-10">
 
             {/* Welcome Hero Landing */}
-            <div className="text-center space-y-6 max-w-3xl mx-auto py-6">
+            <div className="text-center space-y-5 max-w-3xl mx-auto py-4">
               
-              <div className="inline-flex items-center gap-1.5 glass bg-indigo-500/5 px-3 py-1.5 border border-indigo-500/10 rounded-full text-[11px] text-indigo-300 font-semibold uppercase tracking-wider">
-                <Sparkles size={11} className="animate-pulse" /> Sandbox Platform Workspace Active
+              <div className="inline-flex items-center gap-1.5 bg-indigo-50 px-3.5 py-1.5 border border-indigo-100 rounded-full text-[11px] text-indigo-700 font-bold uppercase tracking-wider">
+                <Sparkles size={11} className="text-indigo-600" /> Professional Multi-Engine Workspace
               </div>
 
-              <div className="space-y-4 text-center leading-tight max-w-2xl mx-auto">
-                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
-                  One Toolkit.<br />
-                  <span className="accent-text font-extrabold select-none">Infinite AI Possibilities.</span>
+              <div className="space-y-3 text-center leading-tight max-w-2xl mx-auto">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-zinc-900 tracking-tight leading-tight">
+                  One Unified Workspace.<br />
+                  <span className="accent-text font-extrabold select-none">Powerful Tools & AI Utilities.</span>
                 </h1>
-                <p className="text-xs md:text-sm text-zinc-400 max-w-xl mx-auto leading-relaxed">
-                  Access 100+ premium AI utilities, converters, and generators in a single workspace. Click any interface below to begin compiling results dynamically.
+                <p className="text-xs md:text-sm text-zinc-600 max-w-xl mx-auto leading-relaxed">
+                  Access professional AI calculators, image processors, and smart text processors in one modern tabbed interface.
                 </p>
               </div>
 
               {/* Dynamic responsive Search widget */}
-              <div className="relative max-w-xl mx-auto">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+              <div className="relative max-w-lg mx-auto pt-2">
+                <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
                 <input 
                   type="text"
-                  placeholder="Search for any tool (e.g. Image Upscaler, JSON Formatter, Unit Converter...)"
+                  placeholder="Search tools (e.g. Image Upscaler, JSON Formatter, Unit Converter...)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full glass bg-white/5 py-3.5 pl-12 pr-4 rounded-2xl border border-white/10 text-xs text-white placeholder-white/30 outline-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-sans shadow-inner"
+                  className="w-full bg-white py-3 pl-11 pr-4 rounded-xl border border-zinc-250 text-xs text-zinc-800 placeholder-zinc-400 outline-none focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-zinc-300 transition-all font-sans shadow-sm"
                 />
               </div>
 
             </div>
 
             {/* Responsive Categories filter bar */}
-            <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto py-2">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-4xl mx-auto py-1">
               {[
                 { id: "all", label: "All Utilities", sym: <LayoutGrid size={11} /> },
                 { id: "favorites", label: "Favorites Star", sym: <Heart size={11} /> },
@@ -274,20 +315,21 @@ export default function App() {
                 { id: "productivity", label: "Productivity", sym: <CheckSquare size={11} /> },
                 { id: "calculator", label: "Calculators", sym: <Coins size={11} /> },
                 { id: "converter", label: "Converters", sym: <Timer size={11} /> },
-                { id: "developer", label: "Developer", sym: <Code size={11} /> }
+                { id: "developer", label: "Developer Tools", sym: <Code size={11} /> }
               ].map(cat => {
                 let text = cat.label;
                 if (cat.id === "favorites") {
                   text = `Favorites (${user.favorites.length})`;
                 }
+                const isActive = selectedCategory === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex items-center gap-1.5 text-xs px-4 py-2.5 rounded-full border transition-all cursor-pointer font-semibold select-none ${
-                      selectedCategory === cat.id 
-                        ? "bg-indigo-600 border-indigo-400 text-white shadow-md shadow-indigo-600/10" 
-                        : "glass border-white/5 text-white/60 hover:bg-white/15 hover:text-white"
+                    className={`flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full border transition-all cursor-pointer font-semibold select-none ${
+                      isActive 
+                        ? "bg-zinc-900 border-zinc-900 text-white shadow-sm" 
+                        : "bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
                     }`}
                   >
                     {cat.sym} {text}
@@ -297,48 +339,48 @@ export default function App() {
             </div>
 
             {/* Main grid of cards catalog */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-left">
               {filteredTools.map(tool => {
                 const isFav = user.favorites.includes(tool.id);
                 const colorScheme = getCategoryColor(tool.category);
                 return (
                   <div
                     key={tool.id}
-                    onClick={() => setActiveToolId(tool.id)}
-                    className="glass p-5 rounded-2xl card-hover flex flex-col justify-between gap-5 transition-all text-left group relative overflow-hidden h-full"
+                    onClick={() => handleSelectTool(tool.id)}
+                    className="bg-white border border-zinc-200/85 p-5 rounded-xl card-hover flex flex-col justify-between gap-5 transition-all text-left group relative overflow-hidden h-full shadow-sm"
                   >
                     <div className="space-y-4">
                       {/* Top Header Row of card */}
                       <div className="flex items-start justify-between">
-                        <span className={`p-3 rounded-xl border ${colorScheme.bg} ${colorScheme.text}`}>
-                          {getDynamicIconComponent(tool.iconName, `${colorScheme.text} shrink-0`, 20)}
+                        <span className={`p-2.5 rounded-lg border ${colorScheme.bg} ${colorScheme.text}`}>
+                          {getDynamicIconComponent(tool.iconName, `${colorScheme.text} shrink-0`, 18)}
                         </span>
                         
                         {/* Favorites button */}
                         <button
                           onClick={(e) => handleToggleFavorite(tool.id, e)}
-                          className={`p-2 rounded-lg hover:bg-white/5 transition-all cursor-pointer outline-none shrink-0 ${
-                            isFav ? "text-amber-400" : "text-white/30 hover:text-white"
+                          className={`p-1.5 rounded-md hover:bg-zinc-50 transition-all cursor-pointer outline-none shrink-0 ${
+                            isFav ? "text-amber-500" : "text-zinc-300 hover:text-zinc-550"
                           }`}
                         >
-                          <Star size={14} className={isFav ? "fill-current animate-pulse" : ""} />
+                          <Star size={14} className={isFav ? "fill-current" : ""} />
                         </button>
                       </div>
 
                       {/* Info lines */}
-                      <div className="space-y-2">
-                        <h4 className="text-base font-bold text-white tracking-tight group-hover:text-indigo-300 transition-colors flex items-center gap-1.5 leading-snug">
+                      <div className="space-y-1.5">
+                        <h4 className="text-[14.5px] font-bold text-zinc-900 tracking-tight group-hover:text-indigo-600 transition-colors flex items-center gap-1.5 leading-snug">
                           {tool.name}
                         </h4>
-                        <p className="text-xs text-white/50 leading-relaxed line-clamp-2 select-none">
+                        <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2 select-none">
                           {tool.description}
                         </p>
                       </div>
                     </div>
 
                     {/* Footer Row */}
-                    <div className="flex items-center justify-between border-t border-white/5 pt-3.5 w-full">
-                      <span className="text-[10px] font-mono text-white/30 font-semibold tracking-wider uppercase">
+                    <div className="flex items-center justify-between border-t border-zinc-100 pt-3.5 w-full">
+                      <span className="text-[10px] font-semibold text-zinc-400 tracking-wider font-sans uppercase">
                         {tool.usageCount.toLocaleString()}+ Uses
                       </span>
                       
@@ -346,8 +388,8 @@ export default function App() {
                         {tool.hot && (
                           <span className="pill pill-pro">HOT</span>
                         )}
-                        <span className="pill pill-free">UNLOCKED</span>
-                        <span className="p-1 px-2.5 glass rounded-lg text-white/40 group-hover:text-white group-hover:border-white/20 transition-all font-semibold text-[10px] text-center border border-white/5">
+                        <span className="pill pill-free">UTILITY</span>
+                        <span className="p-1 px-2.5 bg-zinc-50 border border-zinc-250 rounded-md text-zinc-400 group-hover:text-zinc-900 group-hover:bg-zinc-100 group-hover:border-zinc-300 transition-all font-semibold text-[10px] text-center">
                           &rarr;
                         </span>
                       </div>
@@ -358,45 +400,31 @@ export default function App() {
               })}
             </div>
 
-            {/* Section: Telemetry Sidebar Logs & Statistics in collapsible panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-left max-w-7xl mx-auto pt-6 border-t border-white/5">
+            {/* Section: Workspace Activity Log and Help Info */}
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 text-left max-w-7xl mx-auto pt-6 border-t border-zinc-250">
               
-              {/* Telemetry diagnostics */}
-              <div className="lg:col-span-5 h-[230px] rounded-2xl glass p-5 flex flex-col font-mono text-xs text-white/60 relative">
-                <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-3 leading-none">
-                  <span className="text-[10px] font-bold uppercase text-indigo-400 tracking-wider">System Diagnostics</span>
-                  <span className="text-[9px] bg-indigo-500/15 text-indigo-450 px-1.5 py-0.5 rounded">Port: 3000</span>
-                </div>
-                <div className="flex-1 space-y-2 overflow-auto scrollbar-none text-[11px] leading-relaxed">
-                  <div className="flex justify-between"><span>Vite dynamic HMR server</span><span className="text-indigo-450">ONLINE</span></div>
-                  <div className="flex justify-between"><span>Express backend proxy</span><span className="text-emerald-400">ACTIVE</span></div>
-                  <div className="flex justify-between"><span>CPU thermal status</span><span className="text-emerald-400">32.2 °C</span></div>
-                  <div className="flex justify-between"><span>Heap utilization</span><span>11.4 %</span></div>
-                </div>
-              </div>
-
-              {/* Action logs history */}
-              <div className="lg:col-span-7 h-[230px] rounded-2xl glass p-5 flex flex-col text-xs font-mono text-white/60">
-                <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-3 leading-none">
-                  <span className="text-[10px] font-bold uppercase text-indigo-400 tracking-wider">Activity timeline stream</span>
-                  <span className="text-[9px] bg-indigo-500/15 text-indigo-405 px-1.5 py-0.5 rounded">{user.history.length || 0} Actions</span>
+              {/* Pure human Workspace Action Logs */}
+              <div className="w-full rounded-xl bg-white border border-zinc-200 p-5 flex flex-col text-xs text-zinc-600 shadow-sm">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-2.5 mb-3 leading-none">
+                  <span className="text-[10px] font-bold uppercase text-zinc-800 tracking-wider">Workspace Event & History Log</span>
+                  <span className="text-[10px] bg-zinc-50 text-zinc-600 border border-zinc-200 px-2.5 py-0.5 rounded-full">{user.history.length || 0} Events Registered</span>
                 </div>
                 
-                <div className="flex-1 space-y-2.5 overflow-auto custom-scrollbar pr-1">
+                <div className="space-y-2 max-h-[160px] overflow-auto custom-scrollbar pr-1">
                   {user.history.length > 0 ? (
                     user.history.map((log) => (
-                      <div key={log.id} className="flex gap-2 items-start text-[11.5px] border-b border-white/5 pb-2">
-                        <span className="text-white/40 shrink-0 font-mono">
+                      <div key={log.id} className="flex gap-2 items-start text-[11.5px] border-b border-zinc-50 pb-2">
+                        <span className="text-zinc-400 shrink-0 font-mono">
                           [{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]
                         </span>
-                        <div className="flex-1 text-white/80">
-                          <strong className="text-white font-semibold">{log.toolName}</strong>: <span>{log.details}</span>
+                        <div className="flex-1 text-zinc-700">
+                          <strong className="text-zinc-900 font-semibold">{log.toolName}</strong> &mdash; <span>{log.details}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="flex items-center justify-center h-full text-white/30 italic">
-                      No usage logs tracked in current sandboxed flow. Use some tools above.
+                    <div className="flex items-center justify-center py-6 text-zinc-400 italic">
+                      No events registered in this work session. Perform an action to populate this history index.
                     </div>
                   )}
                 </div>
@@ -410,17 +438,20 @@ export default function App() {
       </main>
 
       {/* FOOTER */}
-      <footer className="w-full border-t border-white/5 glass mt-16 py-6 px-8 flex items-center justify-between text-[11px] text-white/30">
+      <footer className="w-full border-t border-zinc-200 bg-white py-6 px-8 flex items-center justify-between text-[11px] text-zinc-500 shadow-inner">
         <div className="max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex gap-6 items-center">
-            <span>&copy; 2026 ToolVerse AI</span>
-            <span className="h-4 w-[1px] bg-white/10 hidden sm:inline" />
-            <span className="hidden sm:inline">Premium sandbox platform workspace</span>
+            <span>&copy; 2026 ToolVerse Workspace</span>
+            <span className="h-4 w-[1px] bg-zinc-200 hidden sm:inline" />
+            <span className="hidden sm:inline">Certified Sandboxed Application Environment</span>
           </div>
           <div className="flex items-center gap-6">
-            <span>System Status: <span className="text-emerald-400 font-semibold">Operational</span></span>
-            <span className="h-4 w-[1px] bg-white/10 hidden sm:inline" />
-            <span>Support: <strong className="text-white/50 font-mono">varadmanwelikar45@gmail.com</strong></span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+              All Engines Connected
+            </span>
+            <span className="h-4 w-[1px] bg-zinc-200 hidden sm:inline" />
+            <span>Developer Support: <strong className="text-zinc-700 font-mono">varadmanwelikar45@gmail.com</strong></span>
           </div>
         </div>
       </footer>
@@ -428,43 +459,43 @@ export default function App() {
 
       {/* AUTHENTICATION PROFILE MODAL MODES */}
       {authModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-sm">
-          <div className="glass max-w-sm w-full p-6 text-left border border-white/10 glow-purple shadow-2xl relative rounded-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm">
+          <div className="bg-white max-w-sm w-full p-6 text-left border border-zinc-200 shadow-xl relative rounded-xl">
             
             <button 
               onClick={() => setAuthModal(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all outline-none cursor-pointer"
+              className="absolute top-4 right-4 p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-all outline-none cursor-pointer"
             >
-              <X size={15} />
+              <X size={14} />
             </button>
 
-            <span className="text-[10px] font-bold text-indigo-400 tracking-wider uppercase font-mono block mb-2">Simulated Account Hub</span>
-            <h3 className="text-md font-bold text-white mb-2 leading-none">Access sandbox profiles</h3>
-            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-              Login utilizing one of these simulation cards to try customized credits and profile synchronization maps.
+            <span className="text-[10px] font-bold text-indigo-600 tracking-wider uppercase font-sans block mb-1">Account Dashboard</span>
+            <h3 className="text-base font-bold text-zinc-900 mb-1.5 leading-none">Simulation Profiles</h3>
+            <p className="text-xs text-zinc-500 mb-5 leading-relaxed">
+              Dynamically switch test personas to preview isolated history lists and configured pro access states.
             </p>
 
             <div className="space-y-2">
               <button
                 onClick={() => handleLoginSimulation("Varad Manwelikar", "varadmanwelikar45@gmail.com")}
-                className="w-full p-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-all outline-none cursor-pointer shadow-lg shadow-indigo-600/20"
+                className="w-full p-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs flex items-center gap-2 transition-all outline-none cursor-pointer shadow-sm"
               >
-                <UserCheck size={14} /> Profile: Varad Manwelikar
+                <UserCheck size={14} /> Persona: Varad Manwelikar
               </button>
               
               <button
                 onClick={() => handleLoginSimulation("Guest Beta Tester", "beta@sandwich.io")}
-                className="w-full p-3 bg-white/5 hover:bg-white/10 text-slate-300 font-bold rounded-xl text-xs flex items-center gap-2 border border-white/10 transition-all outline-none cursor-pointer"
+                className="w-full p-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 font-bold rounded-lg text-xs flex items-center gap-2 border border-zinc-250 transition-all outline-none cursor-pointer"
               >
-                <UserCheck size={14} /> Profile: Guest Beta Tester
+                <UserCheck size={14} /> Persona: Guest Tester
               </button>
 
               {isLogged && (
                 <button
                   onClick={handleLogout}
-                  className="w-full p-2.5 bg-red-950/40 border border-red-500/15 text-red-500 font-bold rounded-xl text-xs transition-all mt-4 cursor-pointer hover:bg-red-950/60"
+                  className="w-full p-2.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold rounded-lg text-xs transition-all mt-3 cursor-pointer"
                 >
-                  Terminate session (Logout)
+                  Sign Out from Workspace Session
                 </button>
               )}
             </div>

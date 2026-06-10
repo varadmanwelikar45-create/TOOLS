@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -6,86 +6,88 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-/* Base resets & Professional Polish Theme Variables */
+/* Base resets & Professional Polish Light Theme variables */
 body {
   margin: 0;
   padding: 0;
-  background-color: #09090b;
-  color: #fafafa;
+  background-color: #fbfcfa;
+  color: #18181b; /* zinc-900 */
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .premium-gradient {
-  background: radial-gradient(circle at 0% 0%, #1e293b 0%, #09090b 100%);
+  background: radial-gradient(circle at 50% 0%, #f7f7f5 0%, #f1f0ec 100%);
   background-attachment: fixed;
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid #e4e4e7; /* zinc-200 */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
 }
 
 /* Backward compatibility map for existing panels */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 4px 10px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
 }
 
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #f4f4f5; /* zinc-100 */
+  border: 1px solid #e4e4e7;
 }
 
 .accent-text {
-  background: linear-gradient(to right, #22d3ee, #818cf8);
+  background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .card-hover {
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
 }
 
 .card-hover:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #ffffff;
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  border-color: #a1a1aa; /* zinc-400 */
+  box-shadow: 0 12px 24px -8px rgba(24, 24, 27, 0.08);
 }
 
 /* Premium pills styling */
 .pill {
-  padding: 4px 10px;
-  border-radius: 99px;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .pill-pro {
-  background: linear-gradient(to right, #f59e0b, #fbbf24);
-  color: #000;
+  background: #fef3c7; /* amber-100 */
+  color: #78350f; /* amber-900 */
+  border: 1px solid #fde68a;
 }
 
 .pill-free {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fafafa;
+  background: #f4f4f5; /* zinc-100 */
+  color: #3f3f46; /* zinc-700 */
+  border: 1px solid #e4e4e7;
 }
 
 .glow-indigo {
-  box-shadow: 0 0 35px rgba(99, 102, 241, 0.18);
+  box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.12);
 }
 
 .glow-purple {
-  box-shadow: 0 0 35px rgba(168, 85, 247, 0.18);
+  box-shadow: 0 10px 30px -10px rgba(124, 58, 237, 0.12);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -98,21 +100,22 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: #d4d4db;
   border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #bababe;
 }
 
-/* Simple animation for floating icons */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+/* Base fade animations with cubic-bezier */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-float {
-  animation: float 4s ease-in-out infinite;
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
 
