@@ -26,13 +26,23 @@ export default function App() {
   // --- USER PERSISTENT PROFILE STATE ---
   const [user, setUser] = useState<UserState>(() => {
     const saved = localStorage.getItem("toolverse_user_profile");
-    const parsed = saved ? JSON.parse(saved) : {
-      credits: 999999,
-      isPro: true,
-      favorites: ["ai-text", "prod-pomo", "dev-qr"],
-      history: [],
-      achievements: []
-    };
+    let parsed: any;
+    try {
+      parsed = saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error("Syntax Error parsing user profile", e);
+      parsed = null;
+    }
+    
+    if (!parsed || typeof parsed !== "object") {
+      parsed = {
+        credits: 999999,
+        isPro: true,
+        favorites: ["ai-text", "prod-pomo", "dev-qr"],
+        history: [],
+        achievements: []
+      };
+    }
     // Force active subscription and infinite credits on load
     parsed.isPro = true;
     parsed.credits = 999999;

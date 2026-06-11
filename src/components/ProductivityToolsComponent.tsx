@@ -16,7 +16,15 @@ export default function ProductivityToolsComponent({ tool, onAddHistory }: { too
   // --- MODULE 1: NOTES APP STATES ---
   const [notes, setNotes] = useState<Note[]>(() => {
     const saved = localStorage.getItem("toolverse_prod_notes");
-    return saved ? JSON.parse(saved) : [
+    try {
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error("Syntax Error parsing notes", e);
+    }
+    return [
       { id: "note-1", title: "🚀 Product Launch checklist", content: "### ToolVerse Milestones\n* Design comprehensive React + Express proxies.\n* Create elegant Glassmorphism visual structures.\n* Fully integrate *Gemini models* for SVG vector engines.", tags: ["ideas", "work"], pinned: true, updatedAt: new Date().toISOString() },
       { id: "note-2", title: "💡 Startups ideas", content: "Create an offline-first premium local cache suite for developers to format JSON data structures.", tags: ["ideas"], pinned: false, updatedAt: new Date().toISOString() }
     ];
@@ -187,7 +195,15 @@ export default function ProductivityToolsComponent({ tool, onAddHistory }: { too
   // --- MODULE 3: TO-DO LIST STATES ---
   const [todos, setTodos] = useState<TodoItem[]>(() => {
     const saved = localStorage.getItem("toolverse_prod_todos");
-    return saved ? JSON.parse(saved) : [
+    try {
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error("Syntax Error parsing todos", e);
+    }
+    return [
       { id: "todo-1", text: "Integrate Gemini model text generators", category: "work", priority: "high", completed: true },
       { id: "todo-2", text: "Audit local storage caches", category: "work", priority: "medium", completed: false },
       { id: "todo-3", text: "Create responsive retro visual UI layouts", category: "personal", priority: "low", completed: false }
@@ -227,7 +243,15 @@ export default function ProductivityToolsComponent({ tool, onAddHistory }: { too
   // --- MODULE 4: HABIT TRACKER STATES ---
   const [habits, setHabits] = useState<Habit[]>(() => {
     const saved = localStorage.getItem("toolverse_prod_habits");
-    return saved ? JSON.parse(saved) : [
+    try {
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.error("Syntax Error parsing habits", e);
+    }
+    return [
       { id: "h-1", name: "Write clean TS code", streak: 5, history: ["2026-06-08", "2026-06-07", "2026-06-06", "2026-06-05", "2026-06-04"], frequency: "daily" },
       { id: "h-2", name: "Meditate 10 mins", streak: 2, history: ["2026-06-08", "2026-06-07"], frequency: "daily" }
     ];
