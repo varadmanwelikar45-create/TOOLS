@@ -181,6 +181,41 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
     // Optionally trigger AI Studio UI components here if requested in flow
   };
 
+  const handleApiResponse = async (res: Response): Promise<any> => {
+    const contentType = res.headers.get("content-type") || "";
+    
+    if (!res.ok) {
+      if (contentType.includes("application/json")) {
+        try {
+          const errData = await res.json();
+          throw new Error(errData.error || `Server error (Status ${res.status})`);
+        } catch (e: any) {
+          throw new Error(e.message || `Server error (Status ${res.status})`);
+        }
+      } else {
+        const textStr = await res.text();
+        if (textStr.includes("<html") || textStr.includes("<!DOCTYPE") || textStr.includes("The page")) {
+          throw new Error("Your preview session has expired or requires authorization. Please verify you are logged in to AI Studio and open the application in your browser.");
+        }
+        throw new Error(`Server returned an error stream (Status ${res.status})`);
+      }
+    }
+
+    if (!contentType.includes("application/json")) {
+      const textStr = await res.text();
+      if (textStr.includes("<html") || textStr.includes("<!DOCTYPE") || textStr.includes("The page")) {
+        throw new Error("Your preview session has expired or requires authorization. Please verify you are logged in to AI Studio and open the application in your browser.");
+      }
+      throw new Error("Expected JSON response but received an invalid data type. Please refresh the page.");
+    }
+
+    try {
+      return await res.json();
+    } catch {
+      throw new Error("Unable to parse API response. Please verify server integrity.");
+    }
+  };
+
   const handleRunAiTool = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -210,7 +245,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
             history: chatMessages
           })
         });
-        const data = await res.json();
+        const data = await handleApiResponse(res);
         
         if (data.error) throw new Error(data.error);
 
@@ -229,7 +264,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(bodyObj)
         });
-        const data = await res.json();
+        const data = await handleApiResponse(res);
 
         if (data.error) throw new Error(data.error);
         setResponse(data.text);
@@ -242,7 +277,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: textPrompt, action: codeAction, language: codeLanguage })
         });
-        const data = await res.json();
+        const data = await handleApiResponse(res);
 
         if (data.error) throw new Error(data.error);
         setResponse(data.text);
@@ -255,7 +290,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: textPrompt, length: summarizeLength })
         });
-        const data = await res.json();
+        const data = await handleApiResponse(res);
 
         if (data.error) throw new Error(data.error);
         setResponse(data.text);
@@ -268,7 +303,7 @@ export default function AiToolsComponent({ tool, userState, updateUserState, onA
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: textPrompt, style: imageStyle })
         });
-        const data = await res.json();
+        const data = await handleApiResponse(res);
 
         if (data.error) throw new Error(data.error);
 
